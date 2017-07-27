@@ -18,7 +18,9 @@ import android.os.Environment;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -27,6 +29,7 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.android_developer_project_10_inventory_app.data.ItemContract.ItemEntry;
@@ -133,7 +136,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 if (quantityStringCheck.matches("")) {
                     currentQuantity = 0;
                 } else {
-                    currentQuantity = Integer.parseInt(mQuantityEditText.getText().toString().trim());
+                    currentQuantity = parseInt(mQuantityEditText.getText().toString().trim());
                 }
 
                 currentQuantity++;
@@ -152,7 +155,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 if (quantityStringCheck.matches("")) {
                     currentQuantity = 0;
                 } else {
-                    currentQuantity = Integer.parseInt(mQuantityEditText.getText().toString().trim());
+                    currentQuantity = parseInt(mQuantityEditText.getText().toString().trim());
                 }
 
                 if (currentQuantity >= 1) {
@@ -425,47 +428,50 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     }
 
     private void saveItem() {
+        TextView mTextViewError = (TextView) findViewById(R.id.text_error);
         if (pictureUri != null) {
-            String nameString = mNameEditText.getText().toString().trim();
-            String quantityString = mQuantityEditText.getText().toString().trim();
-            String priceString = mPriceEditText.getText().toString().trim();
-            String supplierString = mSupplierEditText.getText().toString().trim();
-            String supplierEmailString = mSupplierEmailEditText.getText().toString().trim();
-            if (nameString.isEmpty() || quantityString.isEmpty() ||
-                    priceString.isEmpty() || pictureUri.toString().isEmpty() ||
-                    supplierEmailString.isEmpty() || supplierString.isEmpty()) {
-                Toast.makeText(this, R.string.give_all_the_information, Toast.LENGTH_SHORT);
-                return;
-            }
-            int quantity = parseInt(quantityString);
-            // Create a String that contains the SQL statement to create the items table
 
-            picturePath = pictureUri.toString().trim();
+            mTextViewError.setVisibility(View.GONE);
 
-            ContentValues values = new ContentValues();
-            values.put(ItemEntry.COLUMN_ITEM_NAME, nameString);
-            values.put(ItemEntry.COLUMN_ITEM_PRICE, priceString);
-            values.put(ItemEntry.COLUMN_ITEM_QUANTITY, quantity);
-            values.put(ItemEntry.COLUMN_ITEM_IMAGE, picturePath);
-            values.put(ItemEntry.COLUMN_ITEM_SUPPLIER, supplierString);
-            values.put(ItemEntry.COLUMN_SUPPLIER_EMAIL, supplierEmailString);
-            if (mCurrentItemUri == null) {
-                Uri newUri = getContentResolver().insert(ItemEntry.CONTENT_URI, values);
-                if (newUri == null) {
-                    Toast.makeText(this, R.string.insert_item_failed, Toast.LENGTH_SHORT).show();
+            if (getEditorInputs()) {
+
+                String nameString = mNameEditText.getText().toString().trim();
+                String quantityString = mQuantityEditText.getText().toString().trim();
+                int quantity = parseInt(quantityString);
+                String priceString = mPriceEditText.getText().toString().trim();
+                String supplierString = mSupplierEditText.getText().toString().trim();
+                String supplierEmailString = mSupplierEmailEditText.getText().toString().trim();
+
+                picturePath = pictureUri.toString().trim();
+
+                ContentValues values = new ContentValues();
+                values.put(ItemEntry.COLUMN_ITEM_NAME, nameString);
+                values.put(ItemEntry.COLUMN_ITEM_PRICE, priceString);
+                values.put(ItemEntry.COLUMN_ITEM_QUANTITY, quantity);
+                values.put(ItemEntry.COLUMN_ITEM_IMAGE, picturePath);
+                values.put(ItemEntry.COLUMN_ITEM_SUPPLIER, supplierString);
+                values.put(ItemEntry.COLUMN_SUPPLIER_EMAIL, supplierEmailString);
+                if (mCurrentItemUri == null) {
+                    Uri newUri = getContentResolver().insert(ItemEntry.CONTENT_URI, values);
+                    if (newUri == null) {
+                        Toast.makeText(this, R.string.insert_item_failed, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, getString(R.string.insert_item_successful), Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(this, getString(R.string.insert_item_successful) + newUri, Toast.LENGTH_SHORT).show();
+                    int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
+                    if (rowsAffected == 0) {
+                        Toast.makeText(this, getString(R.string.item_update_failed), Toast.LENGTH_SHORT);
+                    } else {
+                        Toast.makeText(this, getString(R.string.item_update_successful), Toast.LENGTH_SHORT);
+                    }
                 }
-            } else {
-                int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
-                if (rowsAffected == 0) {
-                    Toast.makeText(this, getString(R.string.item_update_failed), Toast.LENGTH_SHORT);
-                } else {
-                    Toast.makeText(this, getString(R.string.item_update_successful), Toast.LENGTH_SHORT);
-                }
+
+                finish();
             }
         } else {
-            Toast.makeText(mContext, R.string.give_all_the_information, Toast.LENGTH_SHORT).show();
+            mTextViewError.setVisibility(View.VISIBLE);
+            mTextViewError.setText("Add an image");
         }
     }
 
@@ -478,8 +484,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 // save item to database
                 saveItem();
 
-                // exit activity
-                finish();
+
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
@@ -587,5 +592,53 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mAddImage.setImageResource(R.drawable.no_image);
         mSupplierEditText.setText("");
         mSupplierEmailEditText.setText("");
+    }
+
+    // method to validate items
+    public boolean getEditorInputs() {
+
+        String nameString = mNameEditText.getText().toString().trim();
+        String quantityString = mQuantityEditText.getText().toString().trim();
+        String priceString = mPriceEditText.getText().toString().trim();
+        String supplierString = mSupplierEditText.getText().toString().trim();
+        String supplierEmailString = mSupplierEmailEditText.getText().toString().trim();
+
+        // check item name
+        if (TextUtils.isEmpty(nameString)) {
+            mNameEditText.requestFocus();
+            mNameEditText.setError("Item name is required");
+            return false;
+        }
+
+        // check item quantity
+        if (TextUtils.isEmpty(quantityString)) {
+            mQuantityEditText.requestFocus();
+            mQuantityEditText.setError("Quantity is required");
+            return false;
+        }
+
+        // check item price
+        if (TextUtils.isEmpty(priceString)) {
+            mPriceEditText.requestFocus();
+            mPriceEditText.setError("Price is required");
+            return false;
+        }
+
+        // check supplier name
+        if (TextUtils.isEmpty(supplierString)) {
+            mSupplierEditText.requestFocus();
+            mSupplierEditText.setError("Supplier is required");
+            return false;
+        }
+
+        // check supplier email
+        if (TextUtils.isEmpty(supplierEmailString) || (!Patterns.EMAIL_ADDRESS.matcher(supplierEmailString).matches())) {
+            mSupplierEmailEditText.requestFocus();
+            mSupplierEmailEditText.setError("Supplier email is required");
+            return false;
+        }
+
+        return true;
+
     }
 }
