@@ -146,8 +146,16 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         {
             @Override
             public void onClick(View v) {
+
+                // checking the initial value
+                String quantityStringCheck = mQuantityEditText.getText().toString();
+                if (quantityStringCheck.matches("")) {
+                    currentQuantity = 0;
+                } else {
+                    currentQuantity = Integer.parseInt(mQuantityEditText.getText().toString().trim());
+                }
+
                 String toastMessage;
-                int currentQuantity = parseInt(mQuantityEditText.getText().toString());
 
                 if (currentQuantity >= 1) {
                     currentQuantity--;
