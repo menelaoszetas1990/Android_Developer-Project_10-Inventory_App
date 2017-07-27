@@ -85,6 +85,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private Uri pictureUri;
 
+    int currentQuantity = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +127,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         {
             @Override
             public void onClick(View v) {
-                int currentQuantity = parseInt(mQuantityEditText.getText().toString());
+
+                // checking the initial value
+                String quantityStringCheck = mQuantityEditText.getText().toString();
+                if (quantityStringCheck.matches("")) {
+                    currentQuantity = 0;
+                } else {
+                    currentQuantity = Integer.parseInt(mQuantityEditText.getText().toString().trim());
+                }
 
                 currentQuantity++;
                 mQuantityEditText.setText(String.valueOf(currentQuantity));
@@ -137,7 +146,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         {
             @Override
             public void onClick(View v) {
-                String currentProduct = mNameEditText.getText().toString();
                 String toastMessage;
                 int currentQuantity = parseInt(mQuantityEditText.getText().toString());
 
