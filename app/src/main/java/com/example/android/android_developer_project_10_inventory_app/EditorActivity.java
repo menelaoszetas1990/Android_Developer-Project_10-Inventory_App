@@ -461,9 +461,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 } else {
                     int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
                     if (rowsAffected == 0) {
-                        Toast.makeText(this, getString(R.string.item_update_failed), Toast.LENGTH_SHORT);
+                        Toast.makeText(this, getString(R.string.item_update_failed), Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(this, getString(R.string.item_update_successful), Toast.LENGTH_SHORT);
+                        Toast.makeText(this, getString(R.string.item_update_successful), Toast.LENGTH_SHORT).show();
                     }
                 }
 
