@@ -155,15 +155,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                     currentQuantity = Integer.parseInt(mQuantityEditText.getText().toString().trim());
                 }
 
-                String toastMessage;
-
                 if (currentQuantity >= 1) {
                     currentQuantity--;
                     mQuantityEditText.setText(String.valueOf(currentQuantity));
                 } else {
-                    toastMessage = "Too low stock";
                     mQuantityEditText.setText(String.valueOf(currentQuantity));
-                    Toast.makeText(v.getContext(), toastMessage, Toast.LENGTH_LONG).show();
+                    Toast.makeText(v.getContext(), "Too low stock", Toast.LENGTH_LONG).show();
                 }
             }
         });
