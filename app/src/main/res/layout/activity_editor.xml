@@ -18,7 +18,7 @@
             android:padding="10dp"
             android:textColor="@android:color/holo_red_light"
             android:background="@android:color/black"
-            android:textSize="14dp"
+            android:textSize="14sp"
             tools:text="asdasdads" />
 
         <!-- Item name -->
